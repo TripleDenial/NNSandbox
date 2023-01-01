@@ -5,9 +5,9 @@ using System.Collections.Generic;
 namespace NNSandbox.TrainSets {
     public static class LolGames {
 
-        public static Epoch GetEpoch(int rank = -1) {
+        public static Epoch GetEpoch(int rank) {
             
-            SqliteConnection sqliteConnection = new("DataSource=");
+            SqliteConnection sqliteConnection = new(@"DataSource=D:\Projects\LeagueNotepad\dist\Debug\ln.db");
             sqliteConnection.Open();
 
             Dictionary<string, double> blankInput = CreateBlankInput(sqliteConnection);

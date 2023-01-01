@@ -31,11 +31,11 @@ namespace NNSandbox {
         }
 
         private void ResetNetwork() {
-            network = Simple_331.Create(NormalizeFunctionComboBox.SelectedItem as IActivationFunction);
+            network = Lol1.Create(NormalizeFunctionComboBox.SelectedItem as IActivationFunction);
             network.Momentum = double.Parse(MomentumTextBox.Text);
             network.LearningSpeed = double.Parse(LearningSpeedTextBox.Text);
             network.Precision = double.Parse(PrecisionTextBox.Text);
-            //network.Log = ShowText;
+            network.Log = ShowText;
             NetworkTextBox.Text = network.ArchitectureAsText;
         }
 
@@ -43,14 +43,14 @@ namespace NNSandbox {
             int epochCount = 0;
             string successEpoch = string.Empty;
             while (!stopped) {
-                (double loss, double accuracy) = network.RunEpoch(XOR.Epoch);
+                (double loss, double accuracy) = network.RunEpoch(LolGames.GetEpoch(14));
                 ResultDataPoint result = new(++epochCount, accuracy, loss);
                 epochCount++;
                 if(Chart.FirstSuccess == null && accuracy == 1) {
                     Chart.FirstSuccess = result;
                     successEpoch = $"{Environment.NewLine}Success epoch: {successEpoch}";
                 }
-                if (epochCount % 10 == 0)
+                //if (epochCount % 10 == 0)
                     Chart.AddPoint(result);
                 ShowText($"Epochs: {epochCount}{Environment.NewLine}Accuracy: {accuracy:0.###}{Environment.NewLine}Loss(MSE): {loss:0.###}{successEpoch}");
             }

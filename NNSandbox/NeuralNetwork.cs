@@ -86,7 +86,7 @@ namespace NNSandbox {
                         weight.Target.Input += source.Output * weight.Value;
                     
             IterationCount++;
-            Log?.Invoke(OutputAsText);
+            //Log?.Invoke(OutputAsText);
         }
 
         public (double, double) RunEpoch(Epoch epoch) {
@@ -100,6 +100,7 @@ namespace NNSandbox {
                 loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
                 setCount++;
                 Learn(trainSet);
+                Log?.Invoke($"Epoch count: {EpochCount}{Environment.NewLine}Set count: {IterationCount}{Environment.NewLine}Loss: {(loss / setCount):0.###}{Environment.NewLine}Accuracy: {(setCountWithCorrectResult / setCount):0.###}");
             }
             EpochCount++;
             return (loss / setCount, setCountWithCorrectResult / setCount);
@@ -123,7 +124,7 @@ namespace NNSandbox {
             Dictionary<Weight, double> gradients = Synaps.GetGradients(deltas);
             Dictionary<Weight, double> changes = gradients.ToDictionary(kvp => kvp.Key, kvp => kvp.Value * LearningSpeed + Momentum * kvp.Key.LastChange);
             Synaps.ApplyChanges(changes);
-            Log?.Invoke($"Synapses:{Environment.NewLine}{Synaps}{Environment.NewLine}");
+            //Log?.Invoke($"Synapses:{Environment.NewLine}{Synaps}{Environment.NewLine}");
         }
 
         private Dictionary<Neuron, double> EvaluateDeltas(double expectedResult) {

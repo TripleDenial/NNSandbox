@@ -74,7 +74,7 @@ namespace NNSandbox.Networks {
         }
 
         private static (List<string>, List<string>) GetInputLayerNames() {
-            SqliteConnection sqliteConnection = new("DataSource=");
+            SqliteConnection sqliteConnection = new(@"DataSource=D:\Projects\LeagueNotepad\dist\Debug\ln.db");
             sqliteConnection.Open();
 
             List<string> team1 = new(), team2 = new();
