@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkSandbox.Architecture {
+namespace NNSandbox.Architecture {
     public abstract class Neuron {
         public string Name { get; }
 

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NeuralNetworkSandbox.Architecture;
-using NeuralNetworkSandbox.TrainSets;
+using NNSandbox.Architecture;
+using NNSandbox.TrainSets;
 
-namespace NeuralNetworkSandbox {
+namespace NNSandbox {
     public class NeuralNetwork {
         private OutputNeuron outputNeuron;
 

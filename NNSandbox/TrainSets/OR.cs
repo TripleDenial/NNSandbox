@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkSandbox.TrainSets {
+namespace NNSandbox.TrainSets {
     public static class OR {
         public static Epoch Epoch {
             get {

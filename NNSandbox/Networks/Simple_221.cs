@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NeuralNetworkSandbox.Architecture;
+using NNSandbox.Architecture;
 
-namespace NeuralNetworkSandbox.Networks {
+namespace NNSandbox.Networks {
     public static class Simple_221 {
         /*
          *      I1   I2

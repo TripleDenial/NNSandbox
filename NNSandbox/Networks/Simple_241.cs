@@ -1,11 +1,11 @@
-﻿using NeuralNetworkSandbox.Architecture;
+﻿using NNSandbox.Architecture;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkSandbox.Networks {
+namespace NNSandbox.Networks {
     public class Simple_241 {
         /*
          *      I1   I2

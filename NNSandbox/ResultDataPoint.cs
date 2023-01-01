@@ -1,4 +1,4 @@
-﻿namespace NeuralNetworkSandbox {
+﻿namespace NNSandbox {
     public class ResultDataPoint {
         public int EpochId { get; }
 

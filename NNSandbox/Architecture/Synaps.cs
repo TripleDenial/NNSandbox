@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkSandbox.Architecture {
+namespace NNSandbox.Architecture {
     public class Synaps {
         public Neuron Source { get; }
         public Neuron Target { get; }

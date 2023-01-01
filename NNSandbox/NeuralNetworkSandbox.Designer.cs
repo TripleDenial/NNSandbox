@@ -1,5 +1,5 @@
 ﻿
-namespace NeuralNetworkSandbox {
+namespace NNSandbox {
     partial class NeuralNetworkSandbox {
         /// <summary>
         ///  Required designer variable.
@@ -26,7 +26,7 @@ namespace NeuralNetworkSandbox {
         private void InitializeComponent() {
             this.RunButton = new System.Windows.Forms.Button();
             this.NetworkTextBox = new System.Windows.Forms.TextBox();
-            this.Chart = new global::NeuralNetworkSandbox.Chart();
+            this.Chart = new global::NNSandbox.Chart();
             this.StopButton = new System.Windows.Forms.Button();
             this.ResetButton = new System.Windows.Forms.Button();
             this.ResultTextBox = new System.Windows.Forms.TextBox();

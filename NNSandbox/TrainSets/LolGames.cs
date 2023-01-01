@@ -1,5 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
-using NeuralNetworkSandbox.TrainSets;
+using NNSandbox.TrainSets;
 using System.Collections.Generic;
 
 namespace NNSandbox.TrainSets {

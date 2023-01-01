@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
-using NeuralNetworkSandbox;
-using NeuralNetworkSandbox.Architecture;
+using NNSandbox;
+using NNSandbox.Architecture;
 using System;
 using System.Collections.Generic;
 

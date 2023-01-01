@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NeuralNetworkSandbox.Architecture {
+namespace NNSandbox.Architecture {
     public enum LayerType { Undefined, Input, Hidden, Output }
     public class Layer {
         private readonly HashSet<Neuron> neurons;

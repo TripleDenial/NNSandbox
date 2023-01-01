@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NeuralNetworkSandbox.TrainSets {
+namespace NNSandbox.TrainSets {
     public class Epoch {
         private readonly List<TrainSet> trainSets;
         public List<TrainSet> TrainSets => trainSets;

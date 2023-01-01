@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace NeuralNetworkSandbox {
+namespace NNSandbox {
     public partial class Chart : UserControl {
         public ResultDataPoint FirstSuccess { get; set; }
         private readonly List<ResultDataPoint> dataPoints;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NeuralNetworkSandbox.TrainSets {
+namespace NNSandbox.TrainSets {
     public class TrainSet {
         private readonly Dictionary<string, double> inputParameters;
         public Dictionary<string, double> InputParameters => inputParameters;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NeuralNetworkSandbox.Architecture {
+namespace NNSandbox.Architecture {
 
     public static class ActivationFunction {
         public static IActivationFunction[] Collection { get; }

@@ -1,4 +1,4 @@
-﻿namespace NeuralNetworkSandbox {
+﻿namespace NNSandbox {
     partial class Chart {
         /// <summary> 
         /// Required designer variable.

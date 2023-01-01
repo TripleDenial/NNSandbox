@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
-using NeuralNetworkSandbox.Architecture;
-using NeuralNetworkSandbox.Networks;
-using NeuralNetworkSandbox.TrainSets;
+using NNSandbox.Architecture;
+using NNSandbox.Networks;
+using NNSandbox.TrainSets;
 
-namespace NeuralNetworkSandbox {
+namespace NNSandbox {
     public partial class NeuralNetworkSandbox : Form {
         private NeuralNetwork network;
         private bool stopped = true;

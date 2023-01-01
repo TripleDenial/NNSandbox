@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NeuralNetworkSandbox.TrainSets {
+namespace NNSandbox.TrainSets {
     public static class XOR {
         public static Epoch Epoch {
             get {
