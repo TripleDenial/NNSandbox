@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuralNetworkSandbox.Architecture {
     public enum LayerType { Undefined, Input, Hidden, Output }
     public class Layer {
-        private HashSet<Neuron> neurons;
+        private readonly HashSet<Neuron> neurons;
         public LayerType Type { get; private set; }
 
         public IEnumerable<Neuron> Neurons => neurons.Select(n => n);
@@ -17,11 +16,14 @@ namespace NeuralNetworkSandbox.Architecture {
             neurons = new HashSet<Neuron>();
         }
 
+        public Layer(LayerType type, IEnumerable<Neuron> neuronsToAdd) {
+            Type = type;
+            neurons = new HashSet<Neuron>(neuronsToAdd);
+        } 
+
         public Layer(LayerType type, params Neuron[] neuronsToAdd) {
             Type = type;
-            neurons = new HashSet<Neuron>();
-            foreach (Neuron neuron in neuronsToAdd)
-                Add(neuron);
+            neurons = new HashSet<Neuron>(neuronsToAdd);
         }
 
         public void Add(Neuron n) {
