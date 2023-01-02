@@ -109,31 +109,28 @@ namespace NNSandbox {
         }
 
         public void Learn(TrainSet trainSet) {
-            Dictionary<Neuron, double> deltas = new();
             foreach (Layer layer in Layers.Reverse<Layer>())
                 foreach (Neuron neuron in layer.Neurons) {
                     switch(neuron) {
                         case OutputNeuron outputNeuron:
-                            deltas.Add(outputNeuron, Result - trainSet.ExpectedResult);
+                            outputNeuron.Delta = Result - trainSet.ExpectedResult;
                             break;
                         case InputNeuron inputNeuron:
                             foreach (Synaps synaps in inputNeuron.Outgoing) {
-                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                                AdjustSynaps(synaps, synaps.Target.Delta);
                             }
                             break;
                         case BiasNeuron biasNeuron:
                             foreach (Synaps synaps in biasNeuron.Outgoing) {
-                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                                AdjustSynaps(synaps, synaps.Target.Delta);
                             }
                             break;
                         default:
-                            double delta = 0;
                             foreach (Synaps synaps in neuron.Outgoing) {
-                                delta += synaps.Weight * deltas[synaps.Target];
-                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                                neuron.Delta += synaps.Weight * synaps.Target.Delta;
+                                AdjustSynaps(synaps, synaps.Target.Delta);
                             }
-                            delta *= neuron.ActivationFunction.CalcDerivative(neuron.Output);
-                            deltas.Add(neuron, delta);
+                            neuron.Delta *= neuron.ActivationFunction.CalcDerivative(neuron.Output);
                             break;
                     }
                 }
@@ -141,9 +138,10 @@ namespace NNSandbox {
         }
 
         private void AdjustSynaps(Synaps synaps, double targetDelta) {
-            double gradient = synaps.Source.Output * targetDelta;
-            double change = gradient * LearningSpeed + Momentum * synaps.LastChange;
-            synaps.Weight -= change;
+            //double gradient = synaps.Source.Output * targetDelta;
+            //double change = gradient * LearningSpeed + Momentum * synaps.LastChange;
+            //synaps.Weight -= change;
+            synaps.Weight -= synaps.Source.Output * targetDelta * LearningSpeed + Momentum * synaps.LastChange;
         }
 
         public string ArchitectureAsText {

@@ -18,6 +18,8 @@ namespace NNSandbox.Architecture {
             }
         }
 
+        public double Delta { get; set; }
+
         public IActivationFunction ActivationFunction { get; protected set; }
 
         public List<Synaps> Outgoing { get; } = new List<Synaps>();
@@ -32,6 +34,7 @@ namespace NNSandbox.Architecture {
 
         public void Reset() {
             calculated = false;
+            Delta = 0;
         }
     }
 }
