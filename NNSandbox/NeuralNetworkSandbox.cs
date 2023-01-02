@@ -43,8 +43,9 @@ namespace NNSandbox {
             network.Validate();
             int epochCount = 0;
             string successEpoch = string.Empty;
+            Epoch trainDataEpoch = LolGames.GetEpoch(14);
             while (!stopped) {
-                (double loss, double accuracy) = network.RunEpoch(LolGames.GetEpoch(14));
+                (double loss, double accuracy) = network.RunEpoch(trainDataEpoch);
                 ResultDataPoint result = new(++epochCount, accuracy, loss);
                 epochCount++;
                 if(Chart.FirstSuccess == null && accuracy == 1) {
