@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
-using NNSandbox;
 using NNSandbox.Architecture;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace NNSandbox.Networks {
@@ -18,8 +18,7 @@ namespace NNSandbox.Networks {
             foreach (string input in team2) {
                 inputLayer.Add(new InputNeuron(input));
             }
-            BiasNeuron inputBiasNeuron = new("BI");
-            inputLayer.Add(inputBiasNeuron);
+            inputLayer.Add(new BiasNeuron("BI"));
             network.Layers.Add(inputLayer);
 
             //embedding layer
@@ -30,8 +29,7 @@ namespace NNSandbox.Networks {
             for (int i = 0; i < 32; i++) {
                 embeddingLayer.Add(new HiddenNeuron($"E2_{i + 1}", func ?? new Sigmoid()));
             }
-            BiasNeuron embeddingBiasNeuron = new("BE");
-            embeddingLayer.Add(embeddingBiasNeuron);
+            embeddingLayer.Add(new BiasNeuron("BE"));
             network.Layers.Add(embeddingLayer);
 
             //hidden layer
@@ -39,8 +37,7 @@ namespace NNSandbox.Networks {
             for (int i = 0; i < 16; i++) {
                 hiddenLayer.Add(new HiddenNeuron($"H{i + 1}", func ?? new Sigmoid()));
             }
-            BiasNeuron hiddenBiasNeuron = new("BH");
-            hiddenLayer.Add(hiddenBiasNeuron);
+            hiddenLayer.Add(new BiasNeuron("BH"));
             network.Layers.Add(hiddenLayer);
 
             //output layer
@@ -50,25 +47,22 @@ namespace NNSandbox.Networks {
             //set synaps
             Random random = new();
             foreach(Neuron inputNeuron in inputLayer.Neurons) {
-                foreach(Neuron embeddingNeuron in embeddingLayer.Neurons) {
+                foreach(HiddenNeuron embeddingNeuron in embeddingLayer.Neurons.OfType<HiddenNeuron>()) {
                     if (inputNeuron.Name[0] == embeddingNeuron.Name[1]) {
-                        network.Synaps[inputNeuron, embeddingNeuron] = (random.NextDouble() - 0.5d) * 2;
+                        inputNeuron.AddSynapsTo(embeddingNeuron, (random.NextDouble() - 0.5d) * 2);
                     }
                 }
             }
 
             foreach (Neuron embeddingNeuron in embeddingLayer.Neurons) {
-                network.Synaps[inputBiasNeuron, embeddingNeuron] = (random.NextDouble() - 0.5d) * 2;
-                foreach (Neuron hiddenNeuron in hiddenLayer.Neurons) {
-                    network.Synaps[embeddingNeuron, hiddenNeuron] = (random.NextDouble() - 0.5d) * 2;
+                foreach (HiddenNeuron hiddenNeuron in hiddenLayer.Neurons.OfType<HiddenNeuron>()) {
+                    embeddingNeuron.AddSynapsTo(hiddenNeuron, (random.NextDouble() - 0.5d) * 2);
                 }
             }
 
             foreach (Neuron hiddenNeuron in hiddenLayer.Neurons) {
-                network.Synaps[embeddingBiasNeuron, hiddenNeuron] = (random.NextDouble() - 0.5d) * 2;
-                network.Synaps[hiddenNeuron, outputNeuron] = (random.NextDouble() - 0.5d) * 2;
+                hiddenNeuron.AddSynapsTo(outputNeuron, (random.NextDouble() - 0.5d) * 2);
             }
-            network.Synaps[hiddenBiasNeuron, outputNeuron] = (random.NextDouble() - 0.5d) * 2;
 
             return network;
         }

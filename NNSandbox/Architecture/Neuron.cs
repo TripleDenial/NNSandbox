@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace NNSandbox.Architecture {
     public abstract class Neuron {
@@ -14,8 +10,14 @@ namespace NNSandbox.Architecture {
 
         public IActivationFunction ActivationFunction { get; protected set; }
 
+        public List<Synaps> Outgoing { get; } = new List<Synaps>();
+
         public Neuron(string name) {
             Name = name;
+        }
+
+        public void AddSynapsTo(Neuron target, double weight = 0) {
+            Outgoing.Add(new Synaps(this, target, weight));
         }
     }
 }

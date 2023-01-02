@@ -12,7 +12,7 @@ namespace NNSandbox {
 
         public List<Layer> Layers { get; }
 
-        public WeightMatrix Synaps { get; private set; }
+        //public WeightMatrix Synaps { get; private set; }
 
         public int IterationCount { get; private set; }
 
@@ -30,7 +30,7 @@ namespace NNSandbox {
 
         public NeuralNetwork() {
             Layers = new List<Layer>();
-            Synaps = new WeightMatrix();
+            //Synaps = new WeightMatrix();
         }
 
         public void Validate() {
@@ -69,21 +69,14 @@ namespace NNSandbox {
             outputNeuron = outputLayer.Neurons.First() as OutputNeuron;
         }
 
-        public void InitializeSynaps(List<(Neuron, Neuron)> pairs) {
-            Synaps = new WeightMatrix();
-            Random random = new();
-            foreach (var pair in pairs)
-                Synaps[pair.Item1, pair.Item2] = random.NextDouble();
-        }
-
         public void RunTrainSet(TrainSet trainSet) {
             Validate();
             SetInputs(trainSet);
 
-            foreach(Layer layer in Layers)
-                foreach(Neuron source in layer.Neurons)
-                    foreach(Weight weight in Synaps.WeightsBySource(source))
-                        weight.Target.Input += source.Output * weight.Value;
+            foreach (Layer layer in Layers)
+                foreach (Neuron source in layer.Neurons)
+                    foreach (Synaps synaps in source.Outgoing)
+                        synaps.Target.Input += source.Output * synaps.Weight;
                     
             IterationCount++;
             //Log?.Invoke(OutputAsText);
@@ -120,27 +113,41 @@ namespace NNSandbox {
         }
 
         public void Learn(TrainSet trainSet) {
-            Dictionary<Neuron, double> deltas = EvaluateDeltas(trainSet.ExpectedResult);
-            Dictionary<Weight, double> gradients = Synaps.GetGradients(deltas);
-            Dictionary<Weight, double> changes = gradients.ToDictionary(kvp => kvp.Key, kvp => kvp.Value * LearningSpeed + Momentum * kvp.Key.LastChange);
-            Synaps.ApplyChanges(changes);
-            //Log?.Invoke($"Synapses:{Environment.NewLine}{Synaps}{Environment.NewLine}");
-        }
-
-        private Dictionary<Neuron, double> EvaluateDeltas(double expectedResult) {
             Dictionary<Neuron, double> deltas = new();
             foreach (Layer layer in Layers.Reverse<Layer>())
                 foreach (Neuron neuron in layer.Neurons) {
-                    double delta = 0;
-                    if (layer.Type == LayerType.Output)
-                        delta = Result - expectedResult;
-                    else 
-                        foreach (Weight weight in Synaps.WeightsBySource(neuron))
-                            delta += weight.Value * deltas[weight.Target];
-                    delta *= neuron.ActivationFunction.CalcDerivative(neuron.Output);
-                    deltas.Add(neuron, delta);
+                    switch(neuron) {
+                        case OutputNeuron outputNeuron:
+                            deltas.Add(outputNeuron, Result - trainSet.ExpectedResult);
+                            break;
+                        case InputNeuron inputNeuron:
+                            foreach (Synaps synaps in inputNeuron.Outgoing) {
+                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                            }
+                            break;
+                        case BiasNeuron biasNeuron:
+                            foreach (Synaps synaps in biasNeuron.Outgoing) {
+                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                            }
+                            break;
+                        default:
+                            double delta = 0;
+                            foreach (Synaps synaps in neuron.Outgoing) {
+                                delta += synaps.Weight * deltas[synaps.Target];
+                                AdjustSynaps(synaps, deltas[synaps.Target]);
+                            }
+                            delta *= neuron.ActivationFunction.CalcDerivative(neuron.Output);
+                            deltas.Add(neuron, delta);
+                            break;
+                    }
                 }
-            return deltas;
+            //Log?.Invoke($"Synapses:{Environment.NewLine}{Synaps}{Environment.NewLine}");
+        }
+
+        private void AdjustSynaps(Synaps synaps, double targetDelta) {
+            double gradient = synaps.Source.Output * targetDelta;
+            double change = gradient * LearningSpeed + Momentum * synaps.LastChange;
+            synaps.Weight -= change;
         }
 
         public string ArchitectureAsText {
@@ -152,7 +159,7 @@ namespace NNSandbox {
                 foreach (Layer layer in Layers)
                     sb.Append(layer.ToString());                
                 sb.AppendLine($"Synapses:");
-                sb.Append(Synaps);
+                //sb.Append(Synaps);
                 return sb.ToString();
             }
         }
