@@ -6,7 +6,17 @@ namespace NNSandbox.Architecture {
 
         public double Input { get; set; } = 0;
 
-        public double Output => ActivationFunction.CalcFunction(Input);
+        private bool calculated;
+        private double output; 
+        public double Output {
+            get {
+                if (!calculated) {
+                    output = ActivationFunction.CalcFunction(Input);
+                    calculated = true;
+                }
+                return output;
+            }
+        }
 
         public IActivationFunction ActivationFunction { get; protected set; }
 
@@ -18,6 +28,10 @@ namespace NNSandbox.Architecture {
 
         public void AddSynapsTo(Neuron target, double weight = 0) {
             Outgoing.Add(new Synaps(this, target, weight));
+        }
+
+        public void Reset() {
+            calculated = false;
         }
     }
 }

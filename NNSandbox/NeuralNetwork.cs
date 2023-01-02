@@ -93,7 +93,8 @@ namespace NNSandbox {
                 loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
                 setCount++;
                 Learn(trainSet);
-                Log?.Invoke($"Epoch count: {EpochCount}{Environment.NewLine}Set count: {IterationCount}{Environment.NewLine}Loss: {(loss / setCount):0.###}{Environment.NewLine}Accuracy: {(setCountWithCorrectResult / setCount):0.###}");
+                if(IterationCount % 100 == 0)
+                    Log?.Invoke($"Epoch count: {EpochCount}{Environment.NewLine}Set count: {IterationCount}{Environment.NewLine}Loss: {(loss / setCount):0.###}{Environment.NewLine}Accuracy: {(setCountWithCorrectResult / setCount):0.###}");
             }
             EpochCount++;
             return (loss / setCount, setCountWithCorrectResult / setCount);
@@ -101,8 +102,10 @@ namespace NNSandbox {
 
         private void SetInputs(TrainSet trainSet) {
             foreach (Layer layer in Layers)
-                foreach (Neuron neuron in layer.Neurons)
+                foreach (Neuron neuron in layer.Neurons) {
+                    neuron.Reset();
                     neuron.Input = neuron is InputNeuron ? trainSet.InputParameters[neuron.Name] : 0;
+                }   
         }
 
         public void Learn(TrainSet trainSet) {
