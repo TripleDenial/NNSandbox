@@ -102,14 +102,7 @@ namespace NNSandbox {
         private void SetInputs(TrainSet trainSet) {
             foreach (Layer layer in Layers)
                 foreach (Neuron neuron in layer.Neurons)
-                    neuron.Input = 0;
-
-            Layer inputLayer = Layers.First();
-            foreach (var inputParam in trainSet.InputParameters) {
-                Neuron neuron = inputLayer.Neurons.FirstOrDefault(n => n.Name == inputParam.Key);
-                if (neuron is InputNeuron inputNeuron)
-                    inputNeuron.Input = inputParam.Value;
-            }
+                    neuron.Input = neuron is InputNeuron ? trainSet.InputParameters[neuron.Name] : 0;
         }
 
         public void Learn(TrainSet trainSet) {
