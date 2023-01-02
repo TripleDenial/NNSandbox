@@ -40,6 +40,7 @@ namespace NNSandbox {
         }
 
         private void Train() {
+            network.Validate();
             int epochCount = 0;
             string successEpoch = string.Empty;
             while (!stopped) {

@@ -70,7 +70,6 @@ namespace NNSandbox {
         }
 
         public void RunTrainSet(TrainSet trainSet) {
-            Validate();
             SetInputs(trainSet);
 
             foreach (Layer layer in Layers)
