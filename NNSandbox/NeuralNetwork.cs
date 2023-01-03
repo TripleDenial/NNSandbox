@@ -77,11 +77,12 @@ namespace NNSandbox {
             IterationCount++;
         }
 
-        public (double, double) RunEpoch(Epoch epoch, CancellationToken token) {
+        public (double Loss, double Accuracy) RunEpoch(Epoch epoch, CancellationToken token, bool doLearn = true) {
             double loss = 0;
             int setCount = 0;
             double setCountWithCorrectResult = 0;
-            foreach (TrainSet trainSet in epoch.TrainSets) {
+            List<TrainSet> setsToRun = doLearn ? epoch.TrainSets : epoch.TestSets;
+            foreach (TrainSet trainSet in setsToRun) {
                 if (token.IsCancellationRequested)
                     break;
 
@@ -90,7 +91,9 @@ namespace NNSandbox {
                 if (Math.Abs(trainSet.ExpectedResult - Result) < Precision)
                     setCountWithCorrectResult++;
                 loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
-                Learn(trainSet);
+
+                if(doLearn)
+                    Learn(trainSet);
                 
                 if(IterationCount % 100 == 0)
                     Report?.Invoke(EpochCount, IterationCount, loss / setCount, setCountWithCorrectResult / setCount);
@@ -100,23 +103,7 @@ namespace NNSandbox {
         }
 
         public double TestEpoch(Epoch epoch, CancellationToken token) {
-            int setCount = 0;
-            double loss = 0;
-            double setCountWithCorrectResult = 0;
-            foreach (TrainSet trainSet in epoch.TestSets) {
-                if (token.IsCancellationRequested)
-                    break;
-
-                RunTrainSet(trainSet);
-                setCount++;
-                if (Math.Abs(trainSet.ExpectedResult - Result) < Precision)
-                    setCountWithCorrectResult++;
-                loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
-
-                if (IterationCount % 100 == 0)
-                    Report?.Invoke(EpochCount, IterationCount, loss / setCount, setCountWithCorrectResult / setCount);
-            }
-            return setCountWithCorrectResult / setCount;
+            return RunEpoch(epoch, token, false).Accuracy;
         }
 
         private void SetInputs(TrainSet trainSet) {
