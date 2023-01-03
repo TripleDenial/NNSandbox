@@ -10,12 +10,11 @@ namespace NNSandbox {
         private NeuralNetwork network;
         private readonly Epoch epoch;
         private bool stopped = true;
-        private bool formClosed;
-        private readonly CancellationTokenSource tokenSource;
+        private bool formCloseRequested;
+        private CancellationTokenSource tokenSource;
 
         public NeuralNetworkSandbox() {
             InitializeComponent();
-            tokenSource = new CancellationTokenSource();
             NormalizeFunctionComboBox.Items.AddRange(ActivationFunction.Collection);
             ApplyInitialSettings();
             epoch = LolGames.GetEpoch(14);
@@ -61,6 +60,9 @@ namespace NNSandbox {
                 //if (epochCount % 10 == 0)
                 Chart.AddPoint(result);
             }
+            if(formCloseRequested) {
+                Invoke(Close);
+            }
         }
 
         private void Test(object parameter) {
@@ -69,24 +71,17 @@ namespace NNSandbox {
             double accuracy = network.TestEpoch(epoch, token);
             void action() { AccuracyTextBox.Text = accuracy.ToString("0.###"); }
 
-            if (formClosed)
-                return;
-
             Invoke(action);
-            Invoke(StopButton_Click, null, EventArgs.Empty);
+            if (formCloseRequested) {
+                Invoke(Close);
+            }
         }
 
         private void UpdateReport(int epochs, int sets, double loss, double accuracy) {
-            if (formClosed)
-                return;
-
             if(InvokeRequired) {
                 Invoke(UpdateReport, epochs, sets, loss, accuracy);
                 return;
             }
-
-            if (formClosed)
-                return;
 
             EpochCountTextBox.Text = epochs.ToString();
             SetCountTextBox.Text = sets.ToString();
@@ -94,9 +89,14 @@ namespace NNSandbox {
             AccuracyTextBox.Text = accuracy.ToString("0.###");
         }
 
+        private void ResetCancellationSource() {
+            tokenSource?.Dispose();
+            tokenSource = new CancellationTokenSource();
+        }
+
         private void RunButton_Click(object sender, EventArgs e) {
             try {
-                tokenSource.TryReset();
+                ResetCancellationSource();
                 stopped = false;
                 UpdateButtonState();
                 Thread learningThread = new(Train);
@@ -128,20 +128,22 @@ namespace NNSandbox {
 
         private void TestButton_Click(object sender, EventArgs e) {
             try {
-                tokenSource.TryReset();
+                ResetCancellationSource();
                 stopped = false;
                 UpdateButtonState();
                 Thread testingThread = new(Test);
                 testingThread.Start(tokenSource.Token);
-                testingThread.
             } catch (Exception ex) {
                 MessageBox.Show(ex.Message);
             }
         }
 
         private void NeuralNetworkSandbox_FormClosing(object sender, FormClosingEventArgs e) {
-            formClosed = true;
-            StopButton_Click(sender, e);
+            if(!stopped) {
+                formCloseRequested = true;
+                StopButton_Click(sender, e);
+                e.Cancel = true;
+            }
         }
     }
 }
