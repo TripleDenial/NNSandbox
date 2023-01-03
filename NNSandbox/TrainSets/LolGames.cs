@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using NNSandbox.TrainSets;
+using System;
 using System.Collections.Generic;
 
 namespace NNSandbox.TrainSets {
@@ -13,7 +14,8 @@ namespace NNSandbox.TrainSets {
             Dictionary<string, double> blankInput = CreateBlankInput(sqliteConnection);
 
             List<TrainSet> trainSets = new();
-            using (SqliteCommand command = new($"SELECT winner,team1,team2 FROM gameData WHERE rank > {rank-2} AND rank < {rank+2}", sqliteConnection)) {
+            long timeStamp = Convert.ToInt64(DateTime.UtcNow.Subtract(new TimeSpan(14, 0, 0, 0)).Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+            using (SqliteCommand command = new($"SELECT winner,team1,team2 FROM gameData WHERE rank > {rank-2} AND rank < {rank+2} AND creationDate > {timeStamp}", sqliteConnection)) {
                 using SqliteDataReader reader = command.ExecuteReader();
                 while (reader.Read()) {
                     trainSets.Add(CreateTrainSetFromData(reader, blankInput));
