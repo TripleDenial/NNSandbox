@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using NNSandbox.Architecture;
 using NNSandbox.TrainSets;
 
@@ -11,8 +11,6 @@ namespace NNSandbox {
         private OutputNeuron outputNeuron;
 
         public List<Layer> Layers { get; }
-
-        //public WeightMatrix Synaps { get; private set; }
 
         public int IterationCount { get; private set; }
 
@@ -26,11 +24,10 @@ namespace NNSandbox {
 
         public double Result => outputNeuron.Output;
 
-        public Action<string> Log { get; set; }
+        public Action<int, int, double, double> Report { get; set; }
 
         public NeuralNetwork() {
             Layers = new List<Layer>();
-            //Synaps = new WeightMatrix();
         }
 
         public void Validate() {
@@ -78,25 +75,48 @@ namespace NNSandbox {
                         synaps.Target.Input += source.Output * synaps.Weight;
                     
             IterationCount++;
-            //Log?.Invoke(OutputAsText);
         }
 
-        public (double, double) RunEpoch(Epoch epoch) {
+        public (double, double) RunEpoch(Epoch epoch, CancellationToken token) {
             double loss = 0;
             int setCount = 0;
             double setCountWithCorrectResult = 0;
             foreach (TrainSet trainSet in epoch.TrainSets) {
+                if (token.IsCancellationRequested)
+                    break;
+
                 RunTrainSet(trainSet);
+                setCount++;
                 if (Math.Abs(trainSet.ExpectedResult - Result) < Precision)
                     setCountWithCorrectResult++;
                 loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
-                setCount++;
                 Learn(trainSet);
+                
                 if(IterationCount % 100 == 0)
-                    Log?.Invoke($"Epoch count: {EpochCount}{Environment.NewLine}Set count: {IterationCount}{Environment.NewLine}Loss: {(loss / setCount):0.###}{Environment.NewLine}Accuracy: {(setCountWithCorrectResult / setCount):0.###}");
+                    Report?.Invoke(EpochCount, IterationCount, loss / setCount, setCountWithCorrectResult / setCount);
             }
             EpochCount++;
             return (loss / setCount, setCountWithCorrectResult / setCount);
+        }
+
+        public double TestEpoch(Epoch epoch, CancellationToken token) {
+            int setCount = 0;
+            double loss = 0;
+            double setCountWithCorrectResult = 0;
+            foreach (TrainSet trainSet in epoch.TestSets) {
+                if (token.IsCancellationRequested)
+                    break;
+
+                RunTrainSet(trainSet);
+                setCount++;
+                if (Math.Abs(trainSet.ExpectedResult - Result) < Precision)
+                    setCountWithCorrectResult++;
+                loss += Math.Pow(trainSet.ExpectedResult - Result, 2);
+
+                if (IterationCount % 100 == 0)
+                    Report?.Invoke(EpochCount, IterationCount, loss / setCount, setCountWithCorrectResult / setCount);
+            }
+            return setCountWithCorrectResult / setCount;
         }
 
         private void SetInputs(TrainSet trainSet) {
@@ -133,13 +153,9 @@ namespace NNSandbox {
                             break;
                     }
                 }
-            //Log?.Invoke($"Synapses:{Environment.NewLine}{Synaps}{Environment.NewLine}");
         }
 
         private void AdjustSynaps(Synaps synaps, double targetDelta) {
-            //double gradient = synaps.Source.Output * targetDelta;
-            //double change = gradient * LearningSpeed + Momentum * synaps.LastChange;
-            //synaps.Weight -= change;
             synaps.Weight -= synaps.Source.Output * targetDelta * LearningSpeed + Momentum * synaps.LastChange;
         }
 
@@ -150,9 +166,7 @@ namespace NNSandbox {
                 sb.AppendLine($"LearningSpeed: {LearningSpeed}");
                 sb.AppendLine("Neurons:");
                 foreach (Layer layer in Layers)
-                    sb.Append(layer.ToString());                
-                sb.AppendLine($"Synapses:");
-                //sb.Append(Synaps);
+                    sb.Append(layer.ToString());
                 return sb.ToString();
             }
         }
