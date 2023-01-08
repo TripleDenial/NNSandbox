@@ -23,10 +23,10 @@ namespace NNSandbox.Networks {
 
             //embedding layer
             Layer embeddingLayer = new();
-            for (int i = 0; i < 32; i++) {
+            for (int i = 0; i < 100; i++) {
                 embeddingLayer.Add(new HiddenNeuron($"E1_{i + 1}", func ?? new Sigmoid()));
             }
-            for (int i = 0; i < 32; i++) {
+            for (int i = 0; i < 100; i++) {
                 embeddingLayer.Add(new HiddenNeuron($"E2_{i + 1}", func ?? new Sigmoid()));
             }
             embeddingLayer.Add(new BiasNeuron("BE"));
@@ -34,7 +34,7 @@ namespace NNSandbox.Networks {
 
             //hidden layer
             Layer hiddenLayer = new();
-            for (int i = 0; i < 16; i++) {
+            for (int i = 0; i < 64; i++) {
                 hiddenLayer.Add(new HiddenNeuron($"H{i + 1}", func ?? new Sigmoid()));
             }
             hiddenLayer.Add(new BiasNeuron("BH"));

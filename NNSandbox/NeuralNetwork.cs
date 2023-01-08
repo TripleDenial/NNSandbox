@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using NNSandbox.Architecture;
+using NNSandbox.Threads;
 using NNSandbox.TrainSets;
 
 namespace NNSandbox {
-    public class NeuralNetwork {
+    public class NeuralNetwork : IDisposable {
+        private const int WORK_THREAD_COUNT = 6;
+
         private OutputNeuron outputNeuron;
 
         public List<Layer> Layers { get; }
@@ -26,8 +29,19 @@ namespace NNSandbox {
 
         public Action<int, int, double, double> Report { get; set; }
 
+        private NeuronProcessingThread[] workThreads;
+
         public NeuralNetwork() {
             Layers = new List<Layer>();
+            InitThreads();
+        }
+
+        private void InitThreads() {
+            workThreads = new NeuronProcessingThread[WORK_THREAD_COUNT];
+            for (int i = 0; i < WORK_THREAD_COUNT; i++) {
+                workThreads[i] = new NeuronProcessingThread($"NeuronWorker{i}");
+                workThreads[i].Start();
+            }
         }
 
         public void Validate() {
@@ -68,16 +82,26 @@ namespace NNSandbox {
 
         public void RunTrainSet(TrainSet trainSet) {
             SetInputs(trainSet);
+            NeuronProcessingThread.Mode = Mode.Forward;
+            int threadId = 0;
 
-            foreach (Layer layer in Layers)
-                foreach (Neuron source in layer.Neurons)
-                    foreach (Synaps synaps in source.Outgoing)
-                        synaps.Target.Input += source.Output * synaps.Weight;
+            foreach (Layer layer in Layers) {
+                foreach (Neuron neuron in layer.Neurons) {
+                    workThreads[threadId].Neurons.Enqueue(neuron);
+                    workThreads[threadId].Signal.Set();
+                    threadId = (++threadId) % WORK_THREAD_COUNT;
+                }
+                foreach(NeuronProcessingThread workThread in workThreads)
+                    workThread.WorkDone.WaitOne();
+            }
+                
                     
             IterationCount++;
         }
 
         public (double Loss, double Accuracy) RunEpoch(Epoch epoch, CancellationToken token, bool doLearn = true) {
+            NeuronProcessingThread.LearnRate = LearningSpeed;
+            NeuronProcessingThread.Momentum = Momentum;
             double loss = 0;
             int setCount = 0;
             double setCountWithCorrectResult = 0;
@@ -115,35 +139,31 @@ namespace NNSandbox {
         }
 
         public void Learn(TrainSet trainSet) {
-            foreach (Layer layer in Layers.Reverse<Layer>())
+            NeuronProcessingThread.Mode = Mode.Backward;
+            NeuronProcessingThread.ExpectedResult = trainSet.ExpectedResult;
+            int threadId = 0;
+            foreach (Layer layer in Layers.Reverse<Layer>()) {
                 foreach (Neuron neuron in layer.Neurons) {
-                    switch(neuron) {
-                        case OutputNeuron outputNeuron:
-                            outputNeuron.Delta = Result - trainSet.ExpectedResult;
-                            break;
-                        case InputNeuron inputNeuron:
-                            foreach (Synaps synaps in inputNeuron.Outgoing) {
-                                AdjustSynaps(synaps, synaps.Target.Delta);
-                            }
-                            break;
-                        case BiasNeuron biasNeuron:
-                            foreach (Synaps synaps in biasNeuron.Outgoing) {
-                                AdjustSynaps(synaps, synaps.Target.Delta);
-                            }
-                            break;
-                        default:
-                            foreach (Synaps synaps in neuron.Outgoing) {
-                                neuron.Delta += synaps.Weight * synaps.Target.Delta;
-                                AdjustSynaps(synaps, synaps.Target.Delta);
-                            }
-                            neuron.Delta *= neuron.ActivationFunction.CalcDerivative(neuron.Output);
-                            break;
-                    }
+                    workThreads[threadId].Neurons.Enqueue(neuron);
+                    workThreads[threadId].Signal.Set();
+                    threadId = (++threadId) % WORK_THREAD_COUNT;
                 }
+                foreach (NeuronProcessingThread workThread in workThreads)
+                    workThread.WorkDone.WaitOne();
+            }
+                
         }
 
-        private void AdjustSynaps(Synaps synaps, double targetDelta) {
-            synaps.Weight -= synaps.Source.Output * targetDelta * LearningSpeed + Momentum * synaps.LastChange;
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if(disposing) {
+                foreach (NeuronProcessingThread workThread in workThreads)
+                    workThread.Stop();
+            }
         }
 
         public string ArchitectureAsText {

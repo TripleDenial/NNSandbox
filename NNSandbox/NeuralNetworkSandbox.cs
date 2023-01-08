@@ -29,6 +29,7 @@ namespace NNSandbox {
         }
 
         private void ResetNetwork() {
+            network?.Dispose();
             network = Lol1.Create(NormalizeFunctionComboBox.SelectedItem as IActivationFunction);
             network.Momentum = double.Parse(MomentumTextBox.Text);
             network.LearningSpeed = double.Parse(LearningSpeedTextBox.Text);
@@ -143,6 +144,7 @@ namespace NNSandbox {
                 formCloseRequested = true;
                 StopButton_Click(sender, e);
                 e.Cancel = true;
+                network.Dispose();
             }
         }
     }
